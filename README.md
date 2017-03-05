@@ -21,7 +21,6 @@ Type: ``` python3 condor.py ``` and enjoy!
 ## TODO
 
 - [x] Truncate extraneous Call/Put Strikes
-- [ ] PyPI support (pip install...)
 - [ ] Functional Bear Call/Bull Put Spread Generation
 - [ ] Functional Iron Condor Generation
 - [ ] Output Optimal Short IC's
