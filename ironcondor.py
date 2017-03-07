@@ -1,74 +1,59 @@
 import wallstreet
 import numpy as np
+import utils as ut
+import pipeline as pl
 from wallstreet import Stock, Call, Put
 
-def input_condor ():
+def input_condor():
 
-	ticker = input("Please input a valid stock ticker. Example: GOOG, NVDA, NFLX  ")
-	print ("Please enter a valid Expiration Date. Example: 3-17-2017  ")
+	ticker = input("Please input a valid stock ticker. Example: GOOG, NVDA, NFLX ")
+	print ("Please enter a valid Expiration Date. Example: 3-17-2017 ")
 
-	month = input("Enter a Valid Month. Example: 12  ")
-	date = input("Enter a Valid Date. Example: 2  ")
-	year = input("Enter a Valid Year. Example: 2016  ")
+	month = input("Enter a Valid Month. Example: 12 ")
+	date = input("Enter a Valid Date. Example: 2 ")
+	year = input("Enter a Valid Year. Example: 2016 ")
 	
 	return (str(ticker), int(date), int(month), int(year))
 
 
-def truncate_strikes(optionStrikes, stockPrice):
-
-	osList = np.asarray(optionStrikes)
-	idx = np.argmin(np.abs(osList - stockPrice))
-
-	leftBound = osList[idx] - (osList[idx] * .05)
-	rightBound = leftBound + (osList[idx] * .1)
-	desiredIndices = []
-
-	for i in range(len(optionStrikes)):
-		if ((optionStrikes[i] <= rightBound) and (optionStrikes[i] >= leftBound)):
-			desiredIndices.append(optionStrikes[i])
-		else: continue
-
-	return desiredIndices
-
-
-def get_strikes(t_data):
+def get_strikes(tData, isIndex):
 
 	stock, expD, expM, expY = tData[0], tData[1], tData[2], tData[3]
 	stockPrice = Stock(tData[0]).price	
 	sCall, lCall, sPut, lPut = [],[],[],[]
 
-	rawCallStrikes = Call(stock, d = expD, m = expM, y = expY).strikes
-	rawPutStrikes = Put(stock, d = expD, m = expM, y = expY).strikes
+	desiredStrikes = ut.pullOptionsChain(stock, True)
 
-	desiredCallStrikes = truncate_strikes(rawCallStrikes, stockPrice)
-	desiredPutStrikes = truncate_strikes(rawPutStrikes, stockPrice)
+	for i in range(len(desiredStrikes)):
 
-	for i in range(len(desiredCallStrikes)):
+		strikePos = desiredStrikes[i]
 
-		csPos = desiredCallStrikes[i]
-		currentCall = Call(stock, d = expD, m = expM, y = expY, strike = csPos)
+		currentCall = Call(stock, d = expD, m = expM, y = expY, strike = strikePos)
 		currentCallDelta = (1 - currentCall.delta())
+		sCallDeltaValid = currentCallDelta >= 76.000 and currentCallDelta <= 80.000
+		lCallDeltaValid = currentCallDelta > 80.000 and currentCallDelta <= 84.000
 
-		if (currentCallDelta >= 76.000 and currentCallDelta <= 80.000):
-			sCall.append(csPos)
-		elif (currentCallDelta > 80.000 and currentCallDelta <= 84.000):
-			lCall.append(csPos)
-		else: continue
-
-	for i in range(len(desiredPutStrikes)):
-
-		psPos = desiredPutStrikes[i]
-		currentPut = Put(stock, d = expD, m = expM, y = expY, strike = psPos)
+		currentPut = Put(stock, d = expD, m = expM, y = expY, strike = strikePos)
 		currentPutDelta = (currentPut.delta() - 1)
+		sPutDeltaValid = currentPutDelta <= -76.000 and currentPutDelta >= -80.000
+		lPutDeltaValid = currentPutDelta < -80.000 and currentPutDelta >= -84.000
 
-		if (currentPutDelta <= -76.000 and currentPutDelta >= -80.000):
-			sPut.append(psPos)
-		elif (currentPutDelta < -80.000 and currentPutDelta >= -84.000):
-			lPut.append(psPos)
-		else: continue
+		validDeltas = (sCallDeltasValid and lCallDeltaValid and sPutDeltaValid and lPutDeltaValid)
+
+		if not validDeltas: continue
+
+		else:
+			if (sCallDeltasValid):
+				sCall.append(strikePos)
+			elif (lCallDeltaValid):
+				lCall.append(strikePos)
+
+			if (sPutDeltaValid):
+				sPut.append(strikePos)
+			elif (lPutDeltaValid):
+				lPut.append(strikePos)
 
 	return (sCall, lCall, sPut, lPut)
-
 
 
 def generate_spreads(OTM_Strikes):
@@ -90,7 +75,6 @@ def generate_spreads(OTM_Strikes):
 			else: continue
 
 	return (bearCallSpreads, bullPutSpreads)
-
 
 
 def generate_ironcondor(spreads):
@@ -117,15 +101,16 @@ def output_condors(iron_condors, ticker, exp_date):
 	return 'temp'
 
 
-
 # ticker_data = input_condor()
 # OTM_strikes = get_strikes(ticker_data)
 # sorted_spreads = generate_spreads(OTM_Strikes)
 # ic_list = generate_ironcondor(sorted_spreads)
 # print(OTM_strikes)
 
-#CallStrikes = Call('GOOG', d = 17, m = 3, y = 2017).strikes
-# goog = Stock('GOOG').price
+# CallStrikes = Call('SPY', d = 17, m = 3, y = 2017).strikes
+# print(CallStrikes)
+# goog = Stock('SPY').price
+# print(goog)
 # print(truncate_strikes(CallStrikes, goog))
 
 # distance = (p0[0] - p1[0])**2 + (p0[1] - p1[1])**2
