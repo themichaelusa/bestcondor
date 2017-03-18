@@ -7,11 +7,11 @@ from wallstreet import Stock, Call, Put
 def input_condor():
 
 	ticker = input("Please input a valid stock ticker. Example: GOOG, NVDA, NFLX ")
-	print ("Please enter a valid Expiration Date. Example: 3-17-2017 ")
+	print ("Please enter a valid Expiration Date. Example: 2017-3-17 ")
 
+	year = input("Enter a Valid Year. Example: 2016 ")
 	month = input("Enter a Valid Month. Example: 12 ")
 	date = input("Enter a Valid Date. Example: 2 ")
-	year = input("Enter a Valid Year. Example: 2016 ")
 	
 	return (str(ticker), int(date), int(month), int(year))
 
@@ -22,7 +22,7 @@ def get_strikes(tData, isIndex):
 	stockPrice = Stock(tData[0]).price	
 	sCall, lCall, sPut, lPut = [],[],[],[]
 
-	desiredStrikes = ut.pullOptionsChain(stock, True)
+	desiredStrikes = pl.pullOptionsChain(stock, True)
 
 	for i in range(len(desiredStrikes)):
 
@@ -99,30 +99,3 @@ def output_condors(iron_condors, ticker, exp_date):
 		print('temp')
 
 	return 'temp'
-
-
-# ticker_data = input_condor()
-# OTM_strikes = get_strikes(ticker_data)
-# sorted_spreads = generate_spreads(OTM_Strikes)
-# ic_list = generate_ironcondor(sorted_spreads)
-# print(OTM_strikes)
-
-# CallStrikes = Call('SPY', d = 17, m = 3, y = 2017).strikes
-# print(CallStrikes)
-# goog = Stock('SPY').price
-# print(goog)
-# print(truncate_strikes(CallStrikes, goog))
-
-# distance = (p0[0] - p1[0])**2 + (p0[1] - p1[1])**2
-# stockPrice = Stock(ticker_info[0])
-# print "Call Strikes:" + callStrikes
-# print "Put Strikes:" + putStrikes
-# centerStrikePrice = input("Enter a valid center strike. This will be your Long Call Price. Example: 550")
-# cOTMBuy = Call(ticker_info[0], d = ticker_info[2], m = ticker_info[1], y = ticker_info[3])
-# cOTMSell = Call(ticker_info[0], d = ticker_info[2], m = ticker_info[1], y = ticker_info[3])
-# bearCallSpread = (cOTMSell.price - (0 - (cOTMBuy.cp * cOTMBuy.price)
-# pOTMBuy = Put(ticker_info[0], d = ticker_info[2], m = ticker_info[1], y = ticker_info[3])
-# pOTMSell = Put(ticker_info[0], d = ticker_info[2], m = ticker_info[1], y = ticker_info[3])
-# bullPutSpread = (pOTMSell.price - (0 - (pOTMBuy.cp * pOTMBuy.price)
-# maxGain =
-# maxLoss =
