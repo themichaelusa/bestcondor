@@ -1,59 +1,53 @@
-import wallstreet
-import numpy as np
 import utils as ut
 import pipeline as pl
-from wallstreet import Stock, Call, Put
 
-def input_condor():
+def formatCalls(inputCalls):
 
-	ticker = input("Please input a valid stock ticker. Example: GOOG, NVDA, NFLX ")
-	print ("Please enter a valid Expiration Date. Example: 2017-3-17 ")
+	sCall, lCall = [],[]
 
-	year = input("Enter a Valid Year. Example: 2016 ")
-	month = input("Enter a Valid Month. Example: 12 ")
-	date = input("Enter a Valid Date. Example: 2 ")
-	
-	return (str(ticker), int(date), int(month), int(year))
+	for i in range(len(inputCalls)):
 
+		currentCallProbOTM = inputCalls[i].currentProbOTM
+		sCallDeltaValid = currentCallProbOTM >= .55 and currentCallProbOTM <= .80
+		lCallDeltaValid = currentCallProbOTM > .80 and currentCallProbOTM <= .99
 
-def get_strikes(tData, isIndex):
-
-	stock, expD, expM, expY = tData[0], tData[1], tData[2], tData[3]
-	stockPrice = Stock(tData[0]).price	
-	sCall, lCall, sPut, lPut = [],[],[],[]
-
-	desiredStrikes = pl.pullOptionsChain(stock, True)
-
-	for i in range(len(desiredStrikes)):
-
-		strikePos = desiredStrikes[i]
-
-		currentCall = Call(stock, d = expD, m = expM, y = expY, strike = strikePos)
-		currentCallDelta = (1 - currentCall.delta())
-		sCallDeltaValid = currentCallDelta >= 76.000 and currentCallDelta <= 80.000
-		lCallDeltaValid = currentCallDelta > 80.000 and currentCallDelta <= 84.000
-
-		currentPut = Put(stock, d = expD, m = expM, y = expY, strike = strikePos)
-		currentPutDelta = (currentPut.delta() - 1)
-		sPutDeltaValid = currentPutDelta <= -76.000 and currentPutDelta >= -80.000
-		lPutDeltaValid = currentPutDelta < -80.000 and currentPutDelta >= -84.000
-
-		validDeltas = (sCallDeltasValid and lCallDeltaValid and sPutDeltaValid and lPutDeltaValid)
+		validDeltas = (sCallDeltaValid or lCallDeltaValid)
 
 		if not validDeltas: continue
 
 		else:
-			if (sCallDeltasValid):
-				sCall.append(strikePos)
+			if (sCallDeltaValid):
+				sCall.append(inputCalls[i])
 			elif (lCallDeltaValid):
-				lCall.append(strikePos)
+				lCall.append(inputCalls[i])
 
+	return (sCall, lCall)
+
+
+def formatPuts(inputPuts):
+
+	sPut, lPut = [],[]
+
+	for i in range(len(inputPuts)):
+
+		currentPutProbOTM = inputPuts[i].currentProbOTM
+		sPutDeltaValid = currentPutProbOTM >= .55 and currentPutProbOTM <= .80
+		lPutDeltaValid = currentPutProbOTM > .80 and currentPutProbOTM <= .99
+
+		validDeltas = (sPutDeltaValid or lPutDeltaValid)
+
+		if not validDeltas: continue
+
+		else:
 			if (sPutDeltaValid):
-				sPut.append(strikePos)
-			elif (lPutDeltaValid):
-				lPut.append(strikePos)
+				sPut.append(inputPuts[i])
+			if (lPutDeltaValid):
+				lPut.append(inputPuts[i])	
 
-	return (sCall, lCall, sPut, lPut)
+	sPut.reverse()
+	lPut.reverse()
+
+	return (sPut, lPut)
 
 
 def generate_spreads(OTM_Strikes):

@@ -6,7 +6,7 @@ Useful tool in combination with Financial Time Series Analytics and ML to select
 ## Installation And Usage
 
 Download bestcondor.zip from repo page. Extract and cd into folder.
-Type: ``` python3 condor.py ``` and enjoy!
+Type: ``` python runcondor.py ``` and enjoy!
 
 ## Documentation (for Modification)
 
@@ -21,6 +21,8 @@ Type: ``` python3 condor.py ``` and enjoy!
 ## TODO
 
 - [x] Truncate extraneous Call/Put Strikes
+- [x] Format Option Chain with specific Expiry Date
+- [x] Format Calls/Puts with favorable ProbExpiryOTM
 - [ ] Functional Bear Call/Bull Put Spread Generation
 - [ ] Functional Iron Condor Generation
 - [ ] Output Optimal Short IC's
